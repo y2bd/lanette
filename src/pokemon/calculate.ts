@@ -34,9 +34,9 @@ export const typesFromPokemon = (names: Array<string | undefined>): Set<string> 
 export const getWeakness = (pokename: string): IWeakness => {
     const [primary, secondary] = Array.from(typesFromPokemon([pokename]));
 
-    const primaryWeakness = weaknessMap[primary as keyof typeof weaknessMap] 
+    const primaryWeakness = weaknessMap[primary as keyof typeof weaknessMap]
         || defaultWeakness();
-    const secondaryWeakness = weaknessMap[secondary as keyof typeof weaknessMap] 
+    const secondaryWeakness = weaknessMap[secondary as keyof typeof weaknessMap]
         || defaultWeakness();
 
     const weak = primaryWeakness.weak.concat(secondaryWeakness.weak);
@@ -89,26 +89,36 @@ export const getWeakness = (pokename: string): IWeakness => {
     return finalWeakness;
 }
 
-export const getHoles = (names: Array<string | undefined>): { 
-    dangerous: string[], 
-    general: string[] 
+export const getHoles = (names: Array<string | undefined>): {
+    absolute: string[],
+    dangerous: string[],
+    general: string[]
 } => {
     const pokenames = names.filter(name => name) as string[];
     const pokeWeaknesses = pokenames.map(getWeakness);
 
     const generalHoles = new Set<string>();
+    let absoluteHoles = new Set<string>();
     for (const type of Object.keys(weaknessMap)) {
         generalHoles.add(type);
     }
 
     const dangerousHoles = new Set<string>();
-    for (const weakness of pokeWeaknesses) { 
+    for (const weakness of pokeWeaknesses) {
         weakness.weak.forEach(type => dangerousHoles.add(type));
         weakness.veryWeak.forEach(type => dangerousHoles.add(type));
+        weakness.weak.forEach(type => absoluteHoles.add(type));
+        weakness.veryWeak.forEach(type => absoluteHoles.add(type));
     }
-    
+
+    for (const weakness of pokeWeaknesses) {
+        absoluteHoles = new Set(
+            Array.from(absoluteHoles).filter(
+                type => weakness.weak.indexOf(type) >= 0 || weakness.veryWeak.indexOf(type) >= 0));
+    }
+
     // now remove any resistances or blocks
-    for (const weakness of pokeWeaknesses) { 
+    for (const weakness of pokeWeaknesses) {
         weakness.resists.forEach(
             type => (dangerousHoles.delete(type), generalHoles.delete(type)));
         weakness.stronglyResists.forEach(
@@ -118,9 +128,10 @@ export const getHoles = (names: Array<string | undefined>): {
     }
 
     return {
-        dangerous: Array.from(dangerousHoles),
-        
-        // Remove all dangerous holes from above
+        absolute: Array.from(absoluteHoles),
+
+        dangerous: Array.from(dangerousHoles).filter(type => !absoluteHoles.has(type)),
+
         general: Array.from(generalHoles).filter(type => !dangerousHoles.has(type))
     }
 }
