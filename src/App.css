@@ -1,7 +1,7 @@
 .App {
     display: flex; 
     flex-direction: column;
-    max-width: 960px;
+    max-width: 1024px;
     padding: 32px;
 }
 
