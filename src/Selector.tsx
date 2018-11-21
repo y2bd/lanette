@@ -1,5 +1,7 @@
 import * as React from 'react';
+import useLocalStorageState from './hooks/useLocalStorage';
 import typeMap from "./pokemon/types"
+import './Selector.css';
 import Weakness from './Weakness';
 
 interface ISelectorProps {
@@ -8,9 +10,16 @@ interface ISelectorProps {
 }
 
 const typeMapKeys = Object.keys(typeMap);
+const undefinedString = 'undefined';
 
 const SelectorBase = ({ index, onSelect }: ISelectorProps) => {
-    const [poke, setPoke] = React.useState<string | undefined>(undefined);
+    const [poke, setPoke] = useLocalStorageState(`poke${index}`, undefinedString as string);
+    React.useEffect(() => {
+        // if it's mount-time and there's already a pokemon, make sure to tell up stream.
+        if (poke !== undefinedString) {
+            onSelect(poke);
+        }
+    }, []);
 
     const onChange = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
         setPoke(evt.target.value);
@@ -22,17 +31,19 @@ const SelectorBase = ({ index, onSelect }: ISelectorProps) => {
         return types && types.join(", ");
     }, [poke])
 
+    const selectedPoke = poke !== undefinedString ? poke : "";
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <label>Choose Pokemon #{index}:</label>
-            <select onChange={onChange} defaultValue="">
+        <div className='Selector'>
+            <label className='Header'>{selectedPoke || `Pokemon ${index}`}</label>
+            <select onChange={onChange} defaultValue={selectedPoke}>
                 <option disabled={true} value="">Choose an option...</option>
                 {typeMapKeys.map(pokename => (
                     <option key={pokename} value={pokename}>{pokename}</option>
                 ))}
             </select>
             {typeString && <p>Types: {typeString}</p>}
-            <Weakness pokemonName={poke} />
+            <Weakness pokemonName={selectedPoke} />
         </div>
     );
 };

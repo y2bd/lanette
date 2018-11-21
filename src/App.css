@@ -1,0 +1,11 @@
+.App {
+    display: flex; 
+    flex-direction: column;
+    max-width: 960px;
+    padding: 32px;
+}
+
+.Selectors {
+    display: flex;
+    flex-wrap: wrap;
+}

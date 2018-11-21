@@ -1,4 +1,5 @@
 import * as React from 'react';
+import './App.css';
 import Selector from './Selector';
 import TeamWeakness from './TeamWeakness';
 
@@ -22,10 +23,12 @@ const App = () => {
   const slots = range.map(useSlot);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {slots.map(slot => (
-        <Selector key={slot.index} index={slot.index} onSelect={slot.setPokemonName} />
-      ))}
+    <div className='App'>
+      <div className='Selectors'>
+        {slots.map(slot => (
+          <Selector key={slot.index} index={slot.index} onSelect={slot.setPokemonName} />
+        ))}
+      </div>
       <TeamWeakness pokemonNames={slots.map(slot => slot.pokemonName)} />
     </div>
   )
